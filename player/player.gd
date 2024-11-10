@@ -1,3 +1,5 @@
+# The entire code here is copied from https://godotengine.org/asset-library/asset/2719. We can understand parts of it and modify it to change abilties. I'm thinking an if condition here and there to update variables.
+
 extends CharacterBody2D
 
 const WALK_FORCE = 600
