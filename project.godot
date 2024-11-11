@@ -14,6 +14,10 @@ config/name="coloursplash"
 run/main_scene="res://picker/picker.tscn"
 config/features=PackedStringArray("4.3", "Forward Plus")
 
+[autoload]
+
+Log="*res://Log.gd"
+
 [display]
 
 window/size/viewport_width=495
@@ -42,4 +46,5 @@ move_right={
 
 [rendering]
 
+textures/canvas_textures/default_texture_filter=0
 environment/defaults/default_clear_color=Color(0.0807833, 0.0807833, 0.0807833, 1)

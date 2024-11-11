@@ -1,14 +1,74 @@
-[gd_scene load_steps=3 format=3 uid="uid://dgkua7yax28kt"]
+[gd_scene load_steps=8 format=3 uid="uid://dgkua7yax28kt"]
 
 [ext_resource type="Script" path="res://player/player.gd" id="1_gnbdq"]
+[ext_resource type="Texture2D" uid="uid://bvmx410m1117o" path="res://player/Art Assets/Idle (Magenta).png" id="2_y4rab"]
+[ext_resource type="Texture2D" uid="uid://cyreoooiyu3f3" path="res://player/Art Assets/Jump (Magenta).png" id="3_4viq3"]
+[ext_resource type="Texture2D" uid="uid://d4vni3se1y0" path="res://player/Art Assets/Walk1 (Magenta).png" id="4_a1q8x"]
+[ext_resource type="Texture2D" uid="uid://b8n0xnbrrgx8o" path="res://player/Art Assets/Walk2 (Magenta).png" id="5_kfxr4"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_vvy4b"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("3_4viq3")
+}],
+"loop": true,
+"name": &"PlayerFall",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_y4rab")
+}],
+"loop": true,
+"name": &"PlayerIdle",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("3_4viq3")
+}],
+"loop": true,
+"name": &"PlayerJump",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("4_a1q8x")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_kfxr4")
+}],
+"loop": true,
+"name": &"PlayerRun",
+"speed": 10.0
+}]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_mpm7k"]
-size = Vector2(16, 16)
+size = Vector2(48, 45.5)
 
-[node name="Player" type="CharacterBody2D"]
+[node name="Player" type="CharacterBody2D" node_paths=PackedStringArray("sprite", "jump_buffer_timer", "coyote_timer")]
 script = ExtResource("1_gnbdq")
+jump_speed = 400
+jump_cancel = 0.33
+sprite = NodePath("AnimatedSprite2D")
+jump_buffer_timer = NodePath("JumpBufferTimer")
+coyote_timer = NodePath("CoyoteTimer")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+position = Vector2(6, -7)
+scale = Vector2(0.651367, 0.651367)
+sprite_frames = SubResource("SpriteFrames_vvy4b")
+animation = &"PlayerIdle"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, 0.25)
 shape = SubResource("RectangleShape2D_mpm7k")
+
+[node name="CoyoteTimer" type="Timer" parent="."]
+wait_time = 0.12
+one_shot = true
+
+[node name="JumpBufferTimer" type="Timer" parent="."]
+wait_time = 0.1
+one_shot = true

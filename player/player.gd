@@ -1,5 +1,8 @@
 # The entire code here is copied from https://godotengine.org/asset-library/asset/2719. We can understand parts of it and modify it to change abilties. I'm thinking an if condition here and there to update variables.
 
+# This project uses an on-screen debugger.
+# Write to it using Log.print("Comment here").
+
 # Add class name so script can be referenced by other scripts
 class_name PlayerScript
 
@@ -15,6 +18,11 @@ extends CharacterBody2D
 @export var walk_max_speed: int = 200	# Maximum movement speed
 @export var stop_force: int = 1300		# Friction
 @export var jump_speed: int = 200		# Jump power
+
+# When the player releases jump button, the velocity is reduced to stop the jump.
+# This variable determines the factor of that reduction.
+# E.g. if set to 0.3, when jump is released velocity *= 0.3.
+@export var jump_cancel: float = 0.3
 
 # Create new "Nodes" subgroup
 @export_subgroup("Nodes")
@@ -32,6 +40,10 @@ var last_frame_on_floor: bool = false
 var move_dir: float = 0
 
 @onready var gravity = ProjectSettings.get_setting("physics/2d/default_gravity")
+
+
+
+
 
 # ##############
 # # MAIN LOGIC #
@@ -55,7 +67,11 @@ func _physics_process(delta: float):
 	
 	# Check if player wants to jump (is pressing input)
 	# Used multiple times, so I set this to a bool variable for a shorthand.
-	var want_to_jump = Input.is_action_just_pressed(&"jump")
+	want_to_jump = Input.is_action_just_pressed(&"jump")
+	
+	# Check if player has released jump input.
+	# Used for variable jump height.
+	jump_released = Input.is_action_just_released(&"jump")
 	
 	# Handle jump. Note that this must be after the movement code.
 	handle_jump(self)
@@ -63,6 +79,10 @@ func _physics_process(delta: float):
 	# Handle animations for movement and jumping.
 	handle_move_animation()
 	handle_jump_animation()
+
+
+
+
 
 # #######################
 # # HORIZONTAL MOVEMENT #
@@ -90,6 +110,10 @@ func handle_vertical_movement(body: CharacterBody2D, delta: float) -> void:
 	# Check if player is falling.
 	is_falling = body.velocity.y > 0 and not body.is_on_floor()
 
+
+
+
+
 # ###########
 # # JUMPING #
 # ###########
@@ -100,7 +124,7 @@ func handle_vertical_movement(body: CharacterBody2D, delta: float) -> void:
 # Scroll down to the Handlers for more context on why these are useful.
 
 # Check if the player is in a condition where they can jump.
-func is_allowed_to_jump(body: CharacterBody2D, want_to_jump: bool) -> bool:
+func is_allowed_to_jump(body: CharacterBody2D) -> bool:
 	# 1. They should want to jump (initiated by pressing the Jump keybind).
 	# 2. Either:
 	# 		a. They are on the ground.
@@ -153,14 +177,14 @@ func handle_jump(body: CharacterBody2D) -> void:
 		is_jumping = false
 	
 	# If the player wants to jump and is allowed to, then perform the jump
-	if is_allowed_to_jump(body, want_to_jump):
+	if is_allowed_to_jump(body):
 		jump(body)
 	
 	handle_coyote_timer(body)
 	handle_jump_buffer(body)
 	handle_variable_jump_height(body)
 	
-	# Used for ...
+	# Used for variable jump height.
 	is_going_up = body.velocity.y < 0 and not body.is_on_floor()
 	
 	# Used for jump frame buffer.
@@ -177,6 +201,7 @@ func handle_coyote_timer(body: CharacterBody2D) -> void:
 	# This means the player keeps moving horizontally and gravity does not affect them.
 	# Makes coyote jumps more consistent with the player's memory of jump heights.
 	if not coyote_timer.is_stopped() and not is_jumping:
+		Log.print(str(coyote_timer.time_left))
 		body.velocity.y = 0
 
 
@@ -194,13 +219,21 @@ func handle_jump_buffer(body: CharacterBody2D) -> void:
 # Logic for variable jump height.
 func handle_variable_jump_height(body: CharacterBody2D) -> void:
 	if jump_released and is_going_up:
-		body.velocity.y = 0
+		body.velocity.y *= 0.3
 
+# Function to apply a jump.
 func jump(body: CharacterBody2D) -> void:
-	body.velocity.y = jump_speed
-	jump_buffer_timer.stop()
+	# Apply force to body.
+	body.velocity.y = -jump_speed
+	
+	# Set jumping state to true.
 	is_jumping = true
+	
+	# Stop timers if they were running.
+	jump_buffer_timer.stop()
 	coyote_timer.stop()
+
+
 
 # ###########
 # ANIMATION #
